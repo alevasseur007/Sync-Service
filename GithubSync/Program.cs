@@ -1,12 +1,13 @@
 using GithubSync.Application.Github;
 using GithubSync.Application.Issues;
 using GithubSync.Application.Sync;
-using GithubSync.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
 using GithubSync.Infrastructure;
+using GithubSync.Infrastructure.Persistence;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,28 @@ builder.Services.AddScoped<ISyncIssues, OptionsBoundSyncIssues>();
 builder.Services.AddSingleton<GithubSync.Infrastructure.Sync.SingleSyncGate>();
 builder.Services.AddHostedService<GithubSync.Infrastructure.Sync.ScheduledSyncService>();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+        c.IncludeXmlComments(xmlPath);
+});
+
+
 var app = builder.Build();
+
+app.UseRouting();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GithubSync v1");
+    c.RoutePrefix = "swagger";
+});
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapControllers();
 
@@ -58,7 +80,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-    Predicate = _ => false // Always healthy if app is running
+    Predicate = _ => false
 });
 
 using (var scope = app.Services.CreateScope())
@@ -68,6 +90,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
 
 
 // Required for unit testing
