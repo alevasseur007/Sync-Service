@@ -1,0 +1,16 @@
+services:
+  githubsync:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      GitHub__Repository: "dotnet/runtime"
+      GitHub__Token: "${GITHUB_TOKEN}"
+      GitHub__SyncIntervalMinutes: "10"
+      GitHub__InitialLookbackDays: "7"
+      ConnectionStrings__AppDb: "Data Source=/data/issues.db"
+    volumes:
+      - githubsync-data:/data
+
+volumes:
+  githubsync-data:

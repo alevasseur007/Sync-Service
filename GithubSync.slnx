@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GithubSync.Tests/GithubSync.Tests.csproj" />
+  <Project Path="GithubSync/GithubSync.csproj" />
+</Solution>
