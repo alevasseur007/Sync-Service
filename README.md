@@ -8,7 +8,7 @@ Mirrors issues from a configured GitHub repository (owner/repo) into a local SQL
 
 Exposes a read API to list issues and fetch issue details
 
-Keeps data fresh via:
+Keeps data updated via:
 
 Manual sync: POST /sync
 
@@ -31,11 +31,11 @@ The service fetches issues from GitHub using the REST API.
 
 It uses an incremental watermark (last seen updated_at) to avoid re-fetching the full issue set every time.
 
-Sync is idempotent:
+Sync is unique:
 
 If an issue doesn’t exist locally → insert
 
-If it exists → update only when GitHub’s updated_at is newer (or consistent update rule)
+If it exists → update only when GitHub’s updated_at is newer
 
 No overlapping sync runs:
 
@@ -147,12 +147,6 @@ Notes / design decisions
 SQLite for a lightweight demo and easy local persistence
 
 EF Core for migrations + simple mapping
-
-Sync is designed to be:
-
-incremental (watermark)
-
-idempotent (upsert)
 
 resilient (retry/backoff on GitHub calls)
 
